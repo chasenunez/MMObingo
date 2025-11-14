@@ -1,320 +1,362 @@
 <%- include('header.ejs') %>
 <title>WUDDLE! | <%= room.Name %></title>
 
-    <div class="container all-boards-container">
-        <div class="roomName-container">
-            <div class="spacer"></div>
-            <h2><%= room.Name %></h2>
-            <div class="spacer"></div>
-        </div>
-        <div class="container view-selector">
-            <button class="unselected">
-                <a href="/rooms/<%=roomID%>/my-board">My Board</a>
-            </button>
-            <div class="spacer"></div>
-            <button class="selected">
-                <a href="/rooms/<%=roomID%>/boards">All Boards</a>
-            </button>
-            <div class="spacer"></div>
-            <button class="unselected">
-                <a href="/rooms/<%=roomID%>/chat">Chat</a>
-            </button>
-        </div>
-        <div>
-            <div class="spacer"></div>
-        </div>
-        <div class="copyText-container" id="copyText-container" style="display: none;">
-            <textarea id="copyText" class="copyText" readonly>Come play Wuddle! Follow this link to join the room '<%= room.Name %>' play-wuddle.com/rooms/<%= room.ID %> or go to play-wuddle.com and enter room code <%= room.ID %></textarea>
-            <button class="closeCopyText" onclick="closeCopyText()">X</button>
-        </div>
-        <div class="spacer"></div>
-        <div class="container grid-container">
-            <div style="display: block; overflow: hidden;">
-                <div class="boardGrid">
-                    <% for (let i = 0; i < room.Players.length; i++) { %>
-                        <div class="container blank-board-container">
-                            <% if (room.BoardSize == 3) { %>
-                                <div class="blank-board" id="<%= room.Players[i].ID %>">
-                                    <% for (let j = 0; j < 9; j++) { %>
-                                        <% if (room.Players[i].BoardState[j] == true ) { %>
-                                            <div class="blank-square" id="<%= room.Players[i].ID %><%= j %>" style="background-color: #4daa57;">
-                                                <div>
-                                                    <!-- Individual square of individiual player -->
-                                                </div>
-                                            </div>
-                                        <% } else { %>
-                                            <div class="blank-square" id="<%= room.Players[i].ID %><%= j %>">
-                                                <div>
-                                                    <!-- Individual square of individiual player -->
-                                                </div>
-                                            </div>
-                                        <% } %>
-                                    <% } %>
-                                </div>
-                            <% } else if (room.BoardSize == 4) { %>
-                                <div class="blank-board-4" id="<%= room.Players[i].ID %>">
-                                    <% for (let j = 0; j < 16; j++) { %>
-                                        <% if (room.Players[i].BoardState[j] == true ) { %>
-                                            <div class="blank-square" id="<%= room.Players[i].ID %><%= j %>" style="background-color: #4daa57;">
-                                                <div>
-                                                    <!-- Individual square of individiual player -->
-                                                </div>
-                                            </div>
-                                        <% } else { %>
-                                            <div class="blank-square" id="<%= room.Players[i].ID %><%= j %>">
-                                                <div>
-                                                    <!-- Individual square of individiual player -->
-                                                </div>
-                                            </div>
-                                        <% } %>
-                                    <% } %>
-                                </div>
-                            <% } else if (room.BoardSize == 5) { %>
-                                <div class="blank-board-5" id="<%= room.Players[i].ID %>">
-                                    <% for (let j = 0; j < 25; j++) { %>
-                                        <% if (room.Players[i].BoardState[j] == true ) { %>
-                                            <div class="blank-square" id="<%= room.Players[i].ID %><%= j %>" style="background-color: #4daa57;">
-                                                <div>
-                                                    <!-- Individual square of individiual player -->
-                                                </div>
-                                            </div>
-                                        <% } else { %>
-                                            <div class="blank-square" id="<%= room.Players[i].ID %><%= j %>">
-                                                <div>
-                                                    <!-- Individual square of individiual player -->
-                                                </div>
-                                            </div>
-                                        <% } %>
-                                    <% } %>
-                                </div>
-                            <% } %>
-                            <div class="nametag" id="<%= room.Players[i].ID %>-nametag">
-                                <h4 style="padding-top: 5px;"><%= room.Players[i].DisplayName %></h4>
-                                <div class="container crowns-container">
-                                    <% if (room.Players[i].NumWins > 0 && room.Players[i].NumWins < 5) { %>
-                                        <% for (let k = 0; k < room.Players[i].NumWins; k++) { %>
-                                            <img src="/images/crown.svg" class="crown">
-                                        <% } %>
-                                        <div><h4 style="color: white; user-select: none;">`</h4></div>
-                                    <% } else if (room.Players[i].NumWins >= 5) { %>
-                                        <img src="/images/crown.svg" class="crown"><h4>x <%= room.Players[i].NumWins %></h4>
-                                    <% } else { %>
-                                        <div><h4 style="color: white; user-select: none;">`</h4></div>
-                                    <% } %>
-                                </div>
-                            </div>
-                        </div>
-                    <% } %>
-                </div>
+<div class="container all-boards-container">
+  <div class="roomName-container">
+    <div class="spacer"></div>
+    <h2><%= room.Name %></h2>
+    <div class="spacer"></div>
+  </div>
+  <div class="container view-selector">
+    <button class="unselected">
+      <a href="/rooms/<%=roomID%>/my-board">My Board</a>
+    </button>
+    <div class="spacer"></div>
+    <button class="selected">
+      <a href="/rooms/<%=roomID%>/boards">All Boards</a>
+    </button>
+    <div class="spacer"></div>
+    <button class="unselected">
+      <a href="/rooms/<%=roomID%>/chat">Chat</a>
+    </button>
+  </div>
+  <div>
+    <div class="spacer"></div>
+  </div>
+  <div class="copyText-container" id="copyText-container" style="display: none">
+    <textarea id="copyText" class="copyText" readonly>
+Come play Wuddle! Follow this link to join the room '<%= room.Name %>' play-wuddle.com/rooms/<%= room.ID %> or go to play-wuddle.com and enter room code <%= room.ID %></textarea
+    >
+    <button class="closeCopyText" onclick="closeCopyText()">X</button>
+  </div>
+  <div class="spacer"></div>
+  <div class="container grid-container">
+    <div style="display: block; overflow: hidden">
+      <div class="boardGrid">
+        <% for (let i = 0; i < room.Players.length; i++) { %>
+        <div class="container blank-board-container">
+          <% if (room.BoardSize == 3) { %>
+          <div class="blank-board" id="<%= room.Players[i].ID %>">
+            <% for (let j = 0; j < 9; j++) { %> <% if
+            (room.Players[i].BoardState[j] == true ) { %>
+            <div
+              class="blank-square"
+              id="<%= room.Players[i].ID %><%= j %>"
+              style="background-color: #4daa57"
+            >
+              <div>
+                <!-- Individual square of individiual player -->
+              </div>
             </div>
-        </div>
-        <div class="container create-sub-container">
-            <hr style="border: 1px solid black; width: 65%;">
-        </div>
-        <div class="container" style="flex-direction: row;">
-            <h3>
-                Room code:&nbsp;<span style="color: black; font-size: calc(2.5vh + 1vw);"><%= room.ID %>&nbsp;</span>
-            </h3>
-            <button type="button" class="copy-button share" title="Copy Invitation">
-                <img src="/images/share.svg" class="copy">
-            </button>
-        </div>
-        <div class="container">
-            <p class="invite-tooltip" style="margin-bottom: 1vh;">^ Have other players join the room! ^</p>
-        </div>
-        <h3 style="margin-top: 3vh; margin-bottom: 2vh;">
-            ADD To The Pool
-        </h3>
-        <!-- <form  action="/rooms/<%= roomID %>/<%=PlayerID%>/boards" method="post" id="addEvent-form"> -->
-        <form id="addEvent-form">
-            <div class="addEvent-container" id="addEvent-container" style="display: flex;">
-                <input type="text" class="addEvent-input" id="event" name="event" placeholder="Something happens..." maxlength="45" autocomplete="off" required>
-                <button class="submitEvent" onclick="addEvent()">ADD GUESS</button>
+            <% } else { %>
+            <div class="blank-square" id="<%= room.Players[i].ID %><%= j %>">
+              <div>
+                <!-- Individual square of individiual player -->
+              </div>
             </div>
-        </form>
-        <% if (room.CreatorID != PlayerID) { %>
-            <div class="container pool-container" id="pool-container" style="display: flex;">
-                <div class="pool">
-                    <!-- <h3 style="margin-bottom: 2vh; margin-top: 2vh;">THE POOL</h3> -->
-                    <div id="poolEvents">
-                        <% for (let i = room.Events.length - 1; i >= 0; i--) { %>
-                            <div class="container pool-item-container">
-                                <p class="pool-item">
-                                    <%= room.Events[i] %>
-                                </p>
-                            </div>
-                        <% } %>
-                    </div>
-                </div>
+            <% } %> <% } %>
+          </div>
+          <% } else if (room.BoardSize == 4) { %>
+          <div class="blank-board-4" id="<%= room.Players[i].ID %>">
+            <% for (let j = 0; j < 16; j++) { %> <% if
+            (room.Players[i].BoardState[j] == true ) { %>
+            <div
+              class="blank-square"
+              id="<%= room.Players[i].ID %><%= j %>"
+              style="background-color: #4daa57"
+            >
+              <div>
+                <!-- Individual square of individiual player -->
+              </div>
             </div>
-        <% } else { %>
-            <div class="container pool-container" id="pool-container" style="display: flex;">
-                <div class="pool">
-                    <!-- <h3 style="margin-bottom: 2vh; margin-top: 2vh;">THE POOL</h3> -->
-                    <div id="poolEvents">
-                        <% for (let i = room.Events.length - 1; i >= 0; i--) { %>
-                            <div class="container pool-item-container" style="flex-direction: row;">
-                                <p class="pool-item">
-                                    <%= room.Events[i] %>
-                                </p>
-                                <button onclick="deleteEvent(<%=i%>)" class="container deleteEventButton">
-                                    X
-                                </button>
-                            </div>
-                        <% } %>
-                    </div>
-                </div>
+            <% } else { %>
+            <div class="blank-square" id="<%= room.Players[i].ID %><%= j %>">
+              <div>
+                <!-- Individual square of individiual player -->
+              </div>
             </div>
+            <% } %> <% } %>
+          </div>
+          <% } else if (room.BoardSize == 5) { %>
+          <div class="blank-board-5" id="<%= room.Players[i].ID %>">
+            <% for (let j = 0; j < 25; j++) { %> <% if
+            (room.Players[i].BoardState[j] == true ) { %>
+            <div
+              class="blank-square"
+              id="<%= room.Players[i].ID %><%= j %>"
+              style="background-color: #4daa57"
+            >
+              <div>
+                <!-- Individual square of individiual player -->
+              </div>
+            </div>
+            <% } else { %>
+            <div class="blank-square" id="<%= room.Players[i].ID %><%= j %>">
+              <div>
+                <!-- Individual square of individiual player -->
+              </div>
+            </div>
+            <% } %> <% } %>
+          </div>
+          <% } %>
+          <div class="nametag" id="<%= room.Players[i].ID %>-nametag">
+            <h4 style="padding-top: 5px"><%= room.Players[i].DisplayName %></h4>
+            <% if (room.CreatorID == PlayerID) { %>
+            <h4 style="font-size: smaller">Code: <%= room.Players[i].ID %></h4>
+            <% } %>
+            <div class="container crowns-container">
+              <% if (room.Players[i].NumWins > 0 && room.Players[i].NumWins < 5)
+              { %> <% for (let k = 0; k < room.Players[i].NumWins; k++) { %>
+              <img src="/images/crown.svg" class="crown" />
+              <% } %>
+              <div><h4 style="color: white; user-select: none">`</h4></div>
+              <% } else if (room.Players[i].NumWins >= 5) { %>
+              <img src="/images/crown.svg" class="crown" />
+              <h4>x <%= room.Players[i].NumWins %></h4>
+              <% } else { %>
+              <div><h4 style="color: white; user-select: none">`</h4></div>
+              <% } %>
+            </div>
+          </div>
+        </div>
         <% } %>
-        <div class="container duplicateRoomContainer">
-            <a href="/copy/<%= room.ID %>" class="container" style="text-decoration: none;">    
-                <button class="container duplicateRoomButton">
-                    Create new room from this pool
-                </button>
-            </a>
+      </div>
+    </div>
+  </div>
+  <div class="container create-sub-container">
+    <hr style="border: 1px solid black; width: 65%" />
+  </div>
+  <div class="container" style="flex-direction: row">
+    <h3>
+      Room code:&nbsp;<span style="color: black; font-size: calc(2.5vh + 1vw)"
+        ><%= room.ID %>&nbsp;</span
+      >
+    </h3>
+    <button type="button" class="copy-button share" title="Copy Invitation">
+      <img src="/images/share.svg" class="copy" />
+    </button>
+  </div>
+  <div class="container">
+    <p class="invite-tooltip" style="margin-bottom: 1vh">
+      ^ Have other players join the room! ^
+    </p>
+  </div>
+  <h3 style="margin-top: 3vh; margin-bottom: 2vh">ADD To The Pool</h3>
+  <!-- <form  action="/rooms/<%= roomID %>/<%=PlayerID%>/boards" method="post" id="addEvent-form"> -->
+  <form id="addEvent-form">
+    <div
+      class="addEvent-container"
+      id="addEvent-container"
+      style="display: flex"
+    >
+      <input
+        type="text"
+        class="addEvent-input"
+        id="event"
+        name="event"
+        placeholder="Something happens..."
+        maxlength="45"
+        autocomplete="off"
+        required
+      />
+      <button class="submitEvent" onclick="addEvent()">ADD GUESS</button>
+    </div>
+  </form>
+  <% if (room.CreatorID != PlayerID) { %>
+  <div
+    class="container pool-container"
+    id="pool-container"
+    style="display: flex"
+  >
+    <div class="pool">
+      <!-- <h3 style="margin-bottom: 2vh; margin-top: 2vh;">THE POOL</h3> -->
+      <div id="poolEvents">
+        <% for (let i = room.Events.length - 1; i >= 0; i--) { %>
+        <div class="container pool-item-container">
+          <p class="pool-item"><%= room.Events[i] %></p>
         </div>
-        <div>
-            <div class="spacer"></div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+  <% } else { %>
+  <div
+    class="container pool-container"
+    id="pool-container"
+    style="display: flex"
+  >
+    <div class="pool">
+      <!-- <h3 style="margin-bottom: 2vh; margin-top: 2vh;">THE POOL</h3> -->
+      <div id="poolEvents">
+        <% for (let i = room.Events.length - 1; i >= 0; i--) { %>
+        <div class="container pool-item-container" style="flex-direction: row">
+          <p class="pool-item"><%= room.Events[i] %></p>
+          <button
+            onclick="deleteEvent(<%=i%>)"
+            class="container deleteEventButton"
+          >
+            X
+          </button>
         </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+  <% } %>
+  <div class="container duplicateRoomContainer">
+    <a
+      href="/copy/<%= room.ID %>"
+      class="container"
+      style="text-decoration: none"
+    >
+      <button class="container duplicateRoomButton">
+        Create new room from this pool
+      </button>
+    </a>
+  </div>
+  <div>
+    <div class="spacer"></div>
+  </div>
 
-    <!-- <script src="http://<%= IP %>:3000/socket.io/socket.io.js"></script> -->
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        var socket = io();
+  <!-- <script src="http://<%= IP %>:3000/socket.io/socket.io.js"></script> -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    var socket = io();
 
-        socket.emit('joinRoom', '<%=roomID%>');
+    socket.emit('joinRoom', '<%=roomID%>');
 
-        var BoardSize = JSON.parse('<%- JSON.stringify(room.BoardSize) %>');
-        var CreatorID = JSON.parse('<%- JSON.stringify(room.CreatorID) %>');
-        var PlayerID = JSON.parse('<%- JSON.stringify(PlayerID) %>');
+    var BoardSize = JSON.parse('<%- JSON.stringify(room.BoardSize) %>');
+    var CreatorID = JSON.parse('<%- JSON.stringify(room.CreatorID) %>');
+    var PlayerID = JSON.parse('<%- JSON.stringify(PlayerID) %>');
 
-        var Events = <%- JSON.stringify(room.Events) %>
-        // alert(Events[0]);
+    var Events = <%- JSON.stringify(room.Events) %>
+    // alert(Events[0]);
 
-        // Register hits from player pages and change color of given square
-        socket.on('hit', (playerID, hitIndex, winCondition) => {
-            document.getElementById(playerID + hitIndex).style.backgroundColor = "#4daa57";
-        });
+    // Register hits from player pages and change color of given square
+    socket.on('hit', (playerID, hitIndex, winCondition) => {
+        document.getElementById(playerID + hitIndex).style.backgroundColor = "#4daa57";
+    });
 
-        socket.on('newPlayer', (PlayerID, PlayerName) => {
-            // TECHNICALLY works but I would like a more elegant solution at some point...
-            // Some method of adding the new board to the list of boards and having it recognized
-            location.reload();
-        });
+    socket.on('newPlayer', (PlayerID, PlayerName) => {
+        // TECHNICALLY works but I would like a more elegant solution at some point...
+        // Some method of adding the new board to the list of boards and having it recognized
+        location.reload();
+    });
 
-        socket.on('refresh', (Name, ID, NumWins) => {
-            newNametag = `<h4 style="padding-top: 5px;">${Name}</h4>`;
-            newNametag += `<div class="container crowns-container">`;
+    socket.on('refresh', (Name, ID, NumWins) => {
+        newNametag = `<h4 style="padding-top: 5px;">${Name}</h4>`;
+        newNametag += `<div class="container crowns-container">`;
 
-            if (NumWins > 0 && NumWins < 5) {
-                for (let i = 0; i < NumWins; i++) {
-                    newNametag += `<img src="/images/crown.svg" class="crown">`;
-                }
-                newNametag += `<div><h4 style="color: white; user-select: none;">,</h4></div>`;
-            } else if (NumWins >= 5) {
-                newNametag += `<img src="/images/crown.svg" class="crown"><h4>x ${NumWins}</h4>`;
-            } else {
-                newNametag += `<div><h4 style="color: white; user-select: none;">,</h4></div>`;
+        if (NumWins > 0 && NumWins < 5) {
+            for (let i = 0; i < NumWins; i++) {
+                newNametag += `<img src="/images/crown.svg" class="crown">`;
             }
-
-            newNametag += `</div>`;
-
-            document.getElementById(`${ID}-nametag`).innerHTML = newNametag;
-        });
-
-        socket.on('clear', (PlayerID) => {
-            if (BoardSize == 3) {
-                for (let i = 0; i < 9; i++) {
-                    document.getElementById(PlayerID + i.toString()).style.backgroundColor = "white";
-                }
-            } else if  (BoardSize == 4) {
-                for (let i = 0; i < 16; i++) {
-                    document.getElementById(PlayerID + i.toString()).style.backgroundColor = "white";
-                }
-            } else if  (BoardSize == 5) {
-                for (let i = 0; i < 25; i++) {
-                    document.getElementById(PlayerID + i.toString()).style.backgroundColor = "white";
-                }
-            }
-        });
-
-        function closeCopyText() {   
-            document.getElementById("copyText-container").style = "display: none;";
+            newNametag += `<div><h4 style="color: white; user-select: none;">,</h4></div>`;
+        } else if (NumWins >= 5) {
+            newNametag += `<img src="/images/crown.svg" class="crown"><h4>x ${NumWins}</h4>`;
+        } else {
+            newNametag += `<div><h4 style="color: white; user-select: none;">,</h4></div>`;
         }
 
-        function copyInvite() {
-            document.getElementById("copyText-container").style = "display: flex;";
-            document.getElementById("copyText").select();
+        newNametag += `</div>`;
+
+        document.getElementById(`${ID}-nametag`).innerHTML = newNametag;
+    });
+
+    socket.on('clear', (PlayerID) => {
+        if (BoardSize == 3) {
+            for (let i = 0; i < 9; i++) {
+                document.getElementById(PlayerID + i.toString()).style.backgroundColor = "white";
+            }
+        } else if  (BoardSize == 4) {
+            for (let i = 0; i < 16; i++) {
+                document.getElementById(PlayerID + i.toString()).style.backgroundColor = "white";
+            }
+        } else if  (BoardSize == 5) {
+            for (let i = 0; i < 25; i++) {
+                document.getElementById(PlayerID + i.toString()).style.backgroundColor = "white";
+            }
+        }
+    });
+
+    function closeCopyText() {
+        document.getElementById("copyText-container").style = "display: none;";
+    }
+
+    function copyInvite() {
+        document.getElementById("copyText-container").style = "display: flex;";
+        document.getElementById("copyText").select();
+    }
+
+    function deleteEvent(eventIndex) {
+        socket.emit('deleteEvent', '<%=roomID%>', eventIndex);
+        // xrlocation.reload();
+    }
+
+    var form = document.getElementById("addEvent-form");
+    function handleForm(event) {
+        event.preventDefault();
+        socket.emit('newEvent', '<%=roomID%>', document.getElementById("event").value);
+        document.getElementById("event").value = "";
+    }
+    form.addEventListener('submit', handleForm);
+
+
+    socket.on('addEvent', (event) => {
+        // alert(event);
+
+        poolInnerHTML = document.getElementById("poolEvents").innerHTML;
+
+        if (CreatorID != PlayerID) {
+            newEventHTML = `<div class="container pool-item-container"><p class="pool-item">${event}</p></div>`;
+        } else {
+            newEventHTML = `<div class="container pool-item-container" style="flex-direction: row;"><p class="pool-item">${event}</p><button onclick="deleteEvent(${Events.length})" class="container deleteEventButton">X</button></div>`;
         }
 
-        function deleteEvent(eventIndex) {
-            socket.emit('deleteEvent', '<%=roomID%>', eventIndex);
-            // xrlocation.reload();
+        Events.push(event);
+
+        document.getElementById("poolEvents").innerHTML = newEventHTML + poolInnerHTML;
+    });
+
+
+    socket.on('deleteEvent', (eventIndex) => {
+        Events.splice(eventIndex, 1);
+        // alert(Events);
+        let newInnerHTML = '';
+
+        if (CreatorID != PlayerID) {
+            for (let i = Events.length-1; i >= 0; i--) {
+                newInnerHTML += `<div class="container pool-item-container"><p class="pool-item">${Events[i]}</p></div>`
+            }
+        } else {
+            for (let i = Events.length-1; i >= 0; i--) {
+                newInnerHTML += `<div class="container pool-item-container" style="flex-direction: row;"><p class="pool-item">${Events[i]}</p><button onclick="deleteEvent(${i})" class="container deleteEventButton">X</button></div>`
+            }
         }
 
-        var form = document.getElementById("addEvent-form");
-        function handleForm(event) { 
-            event.preventDefault();
-            socket.emit('newEvent', '<%=roomID%>', document.getElementById("event").value);
-            document.getElementById("event").value = "";
-        } 
-        form.addEventListener('submit', handleForm);
+        document.getElementById("poolEvents").innerHTML = newInnerHTML;
+    });
 
 
-        socket.on('addEvent', (event) => {
-            // alert(event);
+    const shareData = {
+        title: "WUDDLE!",
+        text: `Come play WUDDLE!\n\nGuess what crazy things your friends and family will do!\n\nFollow this link to join the room: www.play-wuddle.com/rooms/${JSON.parse('<%- JSON.stringify(roomID) %>')}\n\nOr go to play-wuddle.com and enter room code: ${JSON.parse('<%- JSON.stringify(roomID) %>')}`,
+        url: `https://www.play-wuddle.com/rooms/${JSON.parse('<%- JSON.stringify(roomID) %>')}`,
+    };
 
-            poolInnerHTML = document.getElementById("poolEvents").innerHTML;
-            
-            if (CreatorID != PlayerID) {
-                newEventHTML = `<div class="container pool-item-container"><p class="pool-item">${event}</p></div>`;
-            } else {
-                newEventHTML = `<div class="container pool-item-container" style="flex-direction: row;"><p class="pool-item">${event}</p><button onclick="deleteEvent(${Events.length})" class="container deleteEventButton">X</button></div>`;
-            }
+    const btn = document.querySelector(".share");
+    // const resultPara = document.querySelector(".result");
 
-            Events.push(event);
+    // Share must be triggered by "user activation"
+    btn.addEventListener("click", async () => {
+        try {
+            await navigator.share(shareData);
+            // resultPara.textContent = "Shared successfully";
+        } catch (err) {
+            // resultPara.textContent = `Cannot share on this device, please copy invitation instead`;
+        }
+    });
+  </script>
 
-            document.getElementById("poolEvents").innerHTML = newEventHTML + poolInnerHTML;
-        });
-
-
-        socket.on('deleteEvent', (eventIndex) => {
-            Events.splice(eventIndex, 1);
-            // alert(Events);
-            let newInnerHTML = '';
-
-            if (CreatorID != PlayerID) {
-                for (let i = Events.length-1; i >= 0; i--) {
-                    newInnerHTML += `<div class="container pool-item-container"><p class="pool-item">${Events[i]}</p></div>`
-                }
-            } else {
-                for (let i = Events.length-1; i >= 0; i--) {
-                    newInnerHTML += `<div class="container pool-item-container" style="flex-direction: row;"><p class="pool-item">${Events[i]}</p><button onclick="deleteEvent(${i})" class="container deleteEventButton">X</button></div>`
-                }
-            }
-
-            document.getElementById("poolEvents").innerHTML = newInnerHTML;
-        });
-
-
-        const shareData = {
-            title: "WUDDLE!",
-            text: `Come play WUDDLE!\n\nGuess what crazy things your friends and family will do!\n\nFollow this link to join the room: www.play-wuddle.com/rooms/${JSON.parse('<%- JSON.stringify(roomID) %>')}\n\nOr go to play-wuddle.com and enter room code: ${JSON.parse('<%- JSON.stringify(roomID) %>')}`,
-            url: `https://www.play-wuddle.com/rooms/${JSON.parse('<%- JSON.stringify(roomID) %>')}`,
-        };
-
-        const btn = document.querySelector(".share");
-        // const resultPara = document.querySelector(".result");
-
-        // Share must be triggered by "user activation"
-        btn.addEventListener("click", async () => {
-            try {
-                await navigator.share(shareData);
-                // resultPara.textContent = "Shared successfully";
-            } catch (err) {
-                // resultPara.textContent = `Cannot share on this device, please copy invitation instead`;
-            }
-        });
-    </script>
-
-<%- include('footer.ejs') %>
+  <%- include('footer.ejs') %>
+</div>
