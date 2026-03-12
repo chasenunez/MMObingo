@@ -49,6 +49,7 @@ const IdStorageSchema = new Schema({
 const playerSchema = new Schema({
   ID: String,
   DisplayName: String,
+  Email: String,            // NEW: store player's email
   Events: [String],
   BoardState: [Boolean],
   WinCondition: Boolean,
@@ -94,6 +95,25 @@ const Chat = mongoose.model(
   chatSchema
 );
 
+// ---------- Validation helpers ----------
+function isValidEmail(email) {
+  if (!email || typeof email !== 'string') return false;
+  // Basic RFC-ish validation (reasonable server-side check)
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(email.trim());
+}
+
+function isValidUrl(s) {
+  if (!s || typeof s !== 'string') return false;
+  try {
+    const u = new URL(s.trim());
+    return (u.protocol === 'http:' || u.protocol === 'https:');
+  } catch (e) {
+    return false;
+  }
+}
+// ----------------------------------------
+
 // root GET request
 app.get('/', async (req, res) => {
   if (req.cookies.playerID) {
@@ -111,13 +131,6 @@ app.get('/', async (req, res) => {
             });
           }
         });
-
-        // room.TemplateRoomID = "0";
-        // room.DateCreated = Date.now();
-        // room.Chats.forEach(chat => {
-        //   chat.DateCreated = Date.now();
-        // });
-        // room.save();
       });
 
       if (playerRooms.length == 0) {
@@ -185,12 +198,19 @@ io.on("connection", (socket) => {
       // Step 2: Update player's BoardState
       room.Players.forEach(player => {
         if (player.ID == playerID) {
+          // Validate that the event at hitIndex is a valid URL before allowing activation
+          const eventText = player.Events[hitIndex];
+          if (!isValidUrl(eventText)) {
+            console.log(`Rejecting hit: event at index ${hitIndex} is not a valid URL:`, eventText);
+            // Notify the socket that attempted the activation that it's invalid
+            socket.emit('invalidUrl', hitIndex, eventText);
+            return; // do not proceed with marking as hit
+          }
+
           // Update their boardstate to reflect hit
           player.BoardState[hitIndex] = true;
 
-          // console.log(room.Chats);
-
-          // Create an admin chat announcing hit
+          // Create an admin chat announcing hit (keeps previous behavior)
           const chatInstance = new Chat();
           chatInstance.PlayerID = "0";
           chatInstance.PlayerName = "";
@@ -221,8 +241,9 @@ io.on("connection", (socket) => {
             }
           }
 
-          // THIS IS IT WOOOOO
-          io.to(roomID).emit('hit', playerID, hitIndex, player.WinCondition);
+          // Emit the hit — include the URL so clients can convert the square to a clickable link.
+          const eventUrl = player.Events[hitIndex];
+          io.to(roomID).emit('hit', playerID, hitIndex, player.WinCondition, eventUrl);
         }
       });
 
@@ -242,7 +263,7 @@ io.on("connection", (socket) => {
     .catch(function(err) {
       console.log(err);
       console.log("Could not query db");
-      res.redirect("/error");
+      // cannot use res in socket context — just log
     });
 
   });
@@ -274,8 +295,6 @@ io.on("connection", (socket) => {
 
       // add chat to room's chats
       room.Chats.push(chatInstance);
-      // console.log(room.Chats);
-
 
       // Step 3: Push back into db
       await Room.updateOne(
@@ -294,7 +313,6 @@ io.on("connection", (socket) => {
     .catch(function(err) {
       console.log(err);
       console.log("Could not query db");
-      res.redirect("/error");
     });
 
   });
@@ -371,7 +389,6 @@ io.on("connection", (socket) => {
     .catch(function(err) {
       console.log(err);
       console.log("Could not query db");
-      res.redirect("/error");
     });
   });
 
@@ -413,10 +430,23 @@ io.on("connection", (socket) => {
     });
   });
 
+  // NOTE: "add category" (newEvent / deleteEvent) are intentionally *disabled for normal users*.
+  // They will only be processed if the socket connection includes '?admin=true' in the handshake query.
+  // This preserves the underlying functionality for admins but prevents ordinary users from adding categories.
+  function socketIsAdmin(s) {
+    return s && s.handshake && s.handshake.query && s.handshake.query.admin === 'true';
+  }
+
   socket.on('newEvent', async(roomID, eventText) => {
+    if (!socketIsAdmin(socket)) {
+      console.log("Ignored newEvent from non-admin socket.");
+      socket.emit('actionForbidden', 'addEvent');
+      return;
+    }
+
     eventText = filter.clean(eventText);
 
-    console.log(`New Event: ${eventText}`);
+    console.log(`New Event (admin): ${eventText}`);
 
     if (!eventText.includes('*') && !exampleIDs.includes(roomID)) {
       await Room.findOne({ ID : roomID }).exec()
@@ -439,6 +469,12 @@ io.on("connection", (socket) => {
   });
 
   socket.on('deleteEvent', async (roomID, eventIndex) => {
+    if (!socketIsAdmin(socket)) {
+      console.log("Ignored deleteEvent from non-admin socket.");
+      socket.emit('actionForbidden', 'deleteEvent');
+      return;
+    }
+
     await Room.findOne({ ID : roomID }).exec()
     .then(async function(room) {
       room.Events.splice(eventIndex, 1);
@@ -526,6 +562,7 @@ app.get('/create', async (req, res) => {
       roomBoardSize: "3",
       TemplateRoomID: "0",
       AlreadyCopied: false,
+      error: null
     });
   } catch (error) {
     console.error(error);
@@ -536,6 +573,24 @@ app.get('/create', async (req, res) => {
 
 app.post('/create', async (req, res, next) => {
   // When form is sent, create a new room instance
+
+  // If creator is a brand new user (no cookie), require email
+  if (!req.cookies.playerID) {
+    const email = req.body.email;
+    if (!isValidEmail(email)) {
+      // Re-render create with an error message (template should display `error`)
+      return res.render("create", {
+        roomID: req.body.roomID,
+        roomName: req.body.roomName || "",
+        roomEvents: req.body.events ? req.body.events.split(/\r?\n/) : [],
+        roomBoardSize: req.body.boardSize || "3",
+        TemplateRoomID: req.body.TemplateRoomID || "0",
+        AlreadyCopied: false,
+        error: "Please provide a valid email address when creating a new room / user."
+      });
+    }
+  }
+
   const roomInstance = new Room();
 
   roomInstance.ID = req.body.roomID;
@@ -586,7 +641,10 @@ app.post('/create', async (req, res, next) => {
 
   playerInstance.ID = roomInstance.CreatorID;
 
+  // store creator display name and email (email validated earlier if needed)
   playerInstance.DisplayName = filter.clean(req.body.displayName);
+  playerInstance.Email = req.body.email ? req.body.email.trim() : "";
+
   playerInstance.WinCondition = false;
   playerInstance.NumWins = 0;
 
@@ -744,23 +802,10 @@ app.get('/rooms/:roomID/boards', checkRoomID, checkPlayerID, async (req, res) =>
   });
 }); 
 
+// Hide chat page from users — redirect to room (UI should remove links too).
 app.get('/rooms/:roomID/chat', checkRoomID, checkPlayerID, async (req, res) => {
-  let room;
-  // Query this room's squares from database
-  await Room.findOne({ ID: req.params.roomID }).exec()
-    .then(function(result) {
-      room = result;
-      // console.log(room);
-    }
-  );
-
-  // Render the room with the found roomID and squares.
-  res.render("chat", { 
-    PlayerID: req.cookies.playerID,
-    roomID: req.params.roomID,
-    IP: process.env.IP,
-    room: room,
-  });
+  // Redirect users away from the chat page — underlying socket handlers remain on the server.
+  res.redirect("/rooms/" + req.params.roomID);
 });
 
 app.get("/rooms/:roomID/signup", checkRoomID, async (req, res) => {
@@ -782,6 +827,7 @@ app.get("/rooms/:roomID/signup", checkRoomID, async (req, res) => {
   res.render("signup", {
     roomID: req.params.roomID,
     room: room,
+    error: null
   });
 });
 
@@ -789,10 +835,6 @@ app.get("/rooms/:roomID/signup", checkRoomID, async (req, res) => {
 app.post("/rooms/:roomID/signup", async (req, res) => {
   const room = await Room.findOne({ ID: req.params.roomID });
   
-  // if (req.body.event != "") {
-  //   room.Events.push(filter.clean(req.body.event));
-  // }
-
   const playerInstance = new Player();
 
   if (req.cookies.playerID) {
@@ -801,6 +843,16 @@ app.post("/rooms/:roomID/signup", async (req, res) => {
   }
   else {
     // This is this user's first game
+    // Validate email for brand-new players
+    const email = req.body.email;
+    if (!isValidEmail(email)) {
+      return res.render("signup", {
+        roomID: req.params.roomID,
+        room: room,
+        error: "Please provide a valid email address to join this room."
+      });
+    }
+
     console.log("GENERATING NEW ID");
     try {
       let IDs = await IdStorage.findOne({ ID : "1" });
@@ -817,6 +869,7 @@ app.post("/rooms/:roomID/signup", async (req, res) => {
     }
   }
   playerInstance.DisplayName = filter.clean(req.body.displayName);
+  playerInstance.Email = req.body.email ? req.body.email.trim() : "";
   playerInstance.WinCondition = false;
   playerInstance.NumWins = 0;
 
